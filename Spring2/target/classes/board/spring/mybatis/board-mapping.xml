@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="board">
+
+	<select id="allboard" resultType="board" >
+		select * from board
+	</select>
+	
+	<select id="boardcnt" resultType="int">
+		select count(*) from board
+	</select>
+	
+	<select id="boardpaging" resultType="board" parameterType="int[]">
+	<!-- 1페이지 : 1 - 5
+	2페이지 : 6 - 10  -->
+	select seq,title,contents,writer,password,time,viewcount
+	from(
+		select rownum r,seq,title,contents,writer,password,time,viewcount 
+		from (select * from board order by time desc)
+		)
+		where r between 
+		<foreach collection="array" item="r" separator="and">
+			#{r}
+		</foreach>
+		<!-- int[] 배열 받아온거 반복문  -->
+		<!-- 같은 의미 where r between #{array[0]} and #{array[1]} -->
+		<!-- where rownum >= 1 and rownum <= 10 ==>CDATA쓰기 귀찮으면 between써 
+		rownum 사용시 주의 : 먼저 rownum 번호 생성 다해놔-->
+	</select>
+	
+	<select id="boarddetail" resultType="board" parameterType="int">
+		select * from board where seq = #{int}
+	</select>
+	
+	
+	<!-- 글쓰기 insert -->
+	<insert id="insertboard" parameterType="board">
+		insert into board(seq,title,contents,writer,password,time,viewcount) 
+		values((select max(seq)+1 from board),
+		#{title},#{contents},#{writer},#{password},sysdate,0)
+	</insert>
+	
+	<!-- 삭제  -->
+	<delete id="deleteboard" parameterType="int">
+		delete from board where seq = #{int}
+	</delete>
+	
+	<!-- 조회수 업뎃 -->
+	<update id="updatehit" parameterType="int">
+		update board 
+		set viewcount = (select viewcount from board where seq=#{seq}) +1
+		where seq = #{seq}
+	</update>
+	
+	<!-- 수정 -->
+	<update id="boardupdate" parameterType="board">
+		update board
+		set title = #{title}, contents = #{contents}, time = sysdate
+		where seq = #{seq}
+	</update>
+	
+	<!-- 비밀번호 체크  -->
+	<select id="checkpw" parameterType="int[]" resultType="int">
+		select count(*) from board where seq = #{array[0]} and password = #{array[1]}
+	</select>
+
+	
+</mapper>
+
+		
+	<!-- where r between #{array[0]} and #{array[1]} -->
+
+
+
+
+
+

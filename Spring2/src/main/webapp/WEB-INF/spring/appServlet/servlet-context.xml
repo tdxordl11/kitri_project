@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans:beans xmlns="http://www.springframework.org/schema/mvc"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:beans="http://www.springframework.org/schema/beans"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:websocket="http://www.springframework.org/schema/websocket"
+	xsi:schemaLocation="http://www.springframework.org/schema/websocket http://www.springframework.org/schema/websocket/spring-websocket-4.3.xsd
+		http://www.springframework.org/schema/mvc https://www.springframework.org/schema/mvc/spring-mvc.xsd
+		http://www.springframework.org/schema/beans https://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/context https://www.springframework.org/schema/context/spring-context.xsd">
+
+	<!-- DispatcherServlet Context: defines this servlet's request-processing infrastructure -->
+	
+	<!-- Enables the Spring MVC @Controller programming model -->
+	<annotation-driven />
+
+	<!-- Handles HTTP GET requests for /resources/** by efficiently serving up static resources in the ${webappRoot}/resources directory -->
+	
+	<!--  DispatcherServlet => Controller => model, view   (동적인 결과를 가져옴)
+		  view : *.png, *.mp3, jquery.js 필요 => 정적 파일 static resource => resources폴더에 저장해야해
+		  /resources/a.png
+	-->
+	<resources mapping="/resources/**" location="/resources/" />
+
+	<!-- Resolves views selected for rendering by @Controllers to .jsp resources in the /WEB-INF/views directory -->
+	<!-- 	mav.setViewName("/WEB-INF/views/hello.jsp");  -->
+	<beans:bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+		<beans:property name="prefix" value="/WEB-INF/views/" />
+		<beans:property name="suffix" value=".jsp" />
+	</beans:bean>
+	
+	<!-- EmpDAO 2개 있어서 충돌 나는 문제  -->
+	<context:component-scan base-package="board.spring.mybatis" />
+	
+	<!-- 1. mvc패키지에 만들어진 컨트롤러 사용시 : 사용자 컨트롤러 객체 3개  -->
+	<!-- <beans:bean class="mvc.HelloController" id="hc"/> -->
+	<!-- <beans:bean class="mvc.BoardController" id="bc"/>
+	<beans:bean class="mvc.MemberController" id="mc"/> 
+	<beans:bean class="mvc.EmpController" id="ec" />-->
+	<!-- 2.mvc패키지에 만들어진 컨트롤러 사용시 :스프링에서 주어지는 HandlerMapping 객체 생성 
+	/hello.mvc - HelloController -->
+	<beans:bean class="org.springframework.web.servlet.handler.SimpleUrlHandlerMapping" >
+		<beans:property name="mappings">
+			<beans:props> <!-- map생성해주는 xml태그  -->
+				<!-- <beans:prop key="/hello.mvc">hc</beans:prop> -->
+				<!-- <beans:prop key="/boardwrite">bc</beans:prop>
+				<beans:prop key="/member.front">mc</beans:prop> 
+				<beans:prop key="/emp.spring">ec</beans:prop>-->
+			</beans:props>
+		</beans:property>
+	</beans:bean>
+	
+	<!-- EmpDAO bean 생성하는 대신 @Component annotation 사용시 주석처리 / 필요한 컨트롤러에 전달하기 -->
+<!-- 	<beans:bean id="empdao" class="kitri.edu.mvc.EmpDAO"  /> -->
+	
+	<!-- websocket시 필요한 부분 url이 chatws면 이 chatwebsockethandler를 호출하겠다 -->
+<!-- 	<websocket:handlers>
+	<websocket:mapping handler="chatwebsockethandler" path="/chatws"/>
+	</websocket:handlers> -->
+	
+	<!-- 파일 업로드시 필요 -->
+	<beans:bean id="multipartResolver"
+	class="org.springframework.web.multipart.commons.CommonsMultipartResolver"  />
+</beans:beans>
